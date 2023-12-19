@@ -51,15 +51,15 @@ async function run() {
   } catch (error: any) {
     core.debug(error);
     if (error?.request?.request?.retryCount) {
-      console.log(
+      core.error(
         `request failed after ${error.request.request.retryCount} retries with a delay of ${error.request.request.retryAfter}`
       );
     }
-    if (error?.message?.startsWith('No commits between')) {
+    if ((error?.errors ?? error?.response?.data?.errors)?.[0]?.message?.startsWith('No commits between')) {
       core.info('No commits between ' + context.repo.owner + ':' + base + ' and ' + owner + ':' + head);
-    } else if (error?.message?.startsWith('A pull request already exists for')) {
+    } else if ((error?.errors ?? error?.response?.data?.errors)?.[0]?.message?.startsWith('A pull request already exists for')) {
       // we were already done
-      console.log(error.errors[0].message);
+      core.info(error.errors[0].message);
     } else {
       if (!ignoreFail) {
         core.setFailed(`Failed to create or merge pull request: ${error ?? "[n/a]"}`);
