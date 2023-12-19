@@ -17,7 +17,7 @@ async function run() {
   const ignoreFail = core.getBooleanInput('ignore_fail', { required: false });
   const autoApprove = core.getBooleanInput('auto_approve', { required: false });
   const autoMerge = core.getBooleanInput('auto_merge', { required: false });
-  const retries = parseInt(core.getInput('retries', { required: false })) ?? 1;
+  const retries = parseInt(core.getInput('retries', { required: false })) ?? 0;
   const retryAfter = parseInt(core.getInput('retry_after', { required: false })) ?? 60;
 
   const octokit = new MyOctokit({
