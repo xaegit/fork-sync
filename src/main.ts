@@ -17,7 +17,7 @@ async function run() {
   const ignoreFail = core.getBooleanInput('ignore_fail', { required: false });
   const autoApprove = core.getBooleanInput('auto_approve', { required: false });
   const autoMerge = core.getBooleanInput('auto_merge', { required: false });
-  const retries = parseInt(core.getInput('retries', { required: false })) ?? 4;
+  const retries = parseInt(core.getInput('retries', { required: false })) ?? 1;
   const retryAfter = parseInt(core.getInput('retry_after', { required: false })) ?? 60;
 
   const octokit = new MyOctokit({
@@ -49,14 +49,14 @@ async function run() {
         await octokit.pulls.merge({ owner: context.repo.owner, repo: context.repo.repo, pull_number: pr.data.number, merge_method: mergeMethod });
     }
   } catch (error: any) {
-    console.log(error);
+    core.debug(error);
     if (error?.request?.request?.retryCount) {
       console.log(
         `request failed after ${error.request.request.retryCount} retries with a delay of ${error.request.request.retryAfter}`
       );
     }
     if (error?.message?.startsWith('No commits between')) {
-      console.log('No commits between ' + context.repo.owner + ':' + base + ' and ' + owner + ':' + head);
+      core.info('No commits between ' + context.repo.owner + ':' + base + ' and ' + owner + ':' + head);
     } else if (error?.message?.startsWith('A pull request already exists for')) {
       // we were already done
       console.log(error.errors[0].message);
