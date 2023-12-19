@@ -1,10 +1,8 @@
 import * as core from '@actions/core';
 const Github = require('@actions/github');
 const { Octokit } = require("@octokit/rest");
-const { retry } = require("@octokit/plugin-retry");
 const token = core.getInput('token', { required: true });
 const context = Github.context;
-const MyOctokit = Octokit.plugin(retry);
 
 async function run() {
   let owner = core.getInput('owner', { required: false }) || context.repo.owner;
@@ -17,15 +15,9 @@ async function run() {
   const ignoreFail = core.getBooleanInput('ignore_fail', { required: false });
   const autoApprove = core.getBooleanInput('auto_approve', { required: false });
   const autoMerge = core.getBooleanInput('auto_merge', { required: false });
-  const retries = parseInt(core.getInput('retries', { required: false })) ?? 0;
-  const retryAfter = parseInt(core.getInput('retry_after', { required: false })) ?? 60;
 
-  const octokit = new MyOctokit({
+  const octokit = new Octokit({
     auth: token,
-    request: {
-      retries,
-      retryAfter,
-    },
   });
 
   let r = await octokit.rest.repos.get({
@@ -49,11 +41,6 @@ async function run() {
         await octokit.pulls.merge({ owner: context.repo.owner, repo: context.repo.repo, pull_number: pr.data.number, merge_method: mergeMethod });
     }
   } catch (error: any) {
-    if (error?.request?.request?.retryCount) {
-      core.info(
-        `request failed after ${error.request.request.retryCount} retries with a delay of ${error.request.request.retryAfter}`
-      );
-    }
     if ((error?.errors ?? error?.response?.data?.errors)?.[0]?.message?.startsWith('No commits between')) {
       core.info('No commits between ' + context.repo.owner + ':' + base + ' and ' + owner + ':' + head);
     } else if ((error?.errors ?? error?.response?.data?.errors)?.[0]?.message?.startsWith('A pull request already exists for')) {
