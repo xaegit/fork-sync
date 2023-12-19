@@ -54,9 +54,9 @@ async function run() {
         `request failed after ${error.request.request.retryCount} retries with a delay of ${error.request.request.retryAfter}`
       );
     }
-    if ((error?.message?.startsWith('No commits between')) {
+    if (error?.message?.startsWith('No commits between')) {
       console.log('No commits between ' + context.repo.owner + ':' + base + ' and ' + owner + ':' + head);
-    } else if ((error?.message?.startsWith('A pull request already exists for')) {
+    } else if (error?.message?.startsWith('A pull request already exists for')) {
       // we were already done
       console.log(error.errors[0].message);
     } else {
